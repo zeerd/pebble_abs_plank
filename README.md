@@ -1,7 +1,7 @@
 Pebble Abs Plank
 ================
 
-THIS IS A APP FOR PEBBLE SMART WATCH!
+THIS IS AN APP FOR PEBBLE SMART WATCH!
 
 This app helps you to make plank exercices to build your abs.
 
