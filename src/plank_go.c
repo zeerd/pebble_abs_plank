@@ -159,16 +159,21 @@ static void timer_callback(void *context) {
     int next = persist_exists(NUM_PERSIST_LOG_CRT) ? persist_read_int(NUM_PERSIST_LOG_CRT)+1 : 0;
     next = next % PERSIST_LOG_MAX;
 
-    char new[PERSIST_LOG_LEN];
     time_t t = time(NULL);
     struct tm *loc =  localtime(&t);
-    snprintf(new, PERSIST_LOG_LEN, 
-             "[%02d%02d %02d%02d]%2dx3x%3d(%2d)",
-             loc->tm_mon+1, loc->tm_mday, loc->tm_hour, loc->tm_min,
-             cfg_sets, cfg_time, cfg_rest);
-    persist_write_string(NUM_PERSIST_LOG+next, new); 
+    log_t log;
+    log.year = loc->tm_year;
+    log.mon = loc->tm_mon+1;
+    log.day = loc->tm_mday;
+    log.hour = loc->tm_hour;
+    log.min = loc->tm_min;
+    log.sec = loc->tm_sec;
+    log.sets = cfg_sets;
+    log.time = cfg_time;
+    log.rest = cfg_rest;
+    persist_write_data(NUM_PERSIST_LOG+next, &log, sizeof(log)); 
     persist_write_int(NUM_PERSIST_LOG_CRT, next); 
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "saving %s into %d", new, next);
+    //APP_LOG(APP_LOG_LEVEL_DEBUG, "saving %s into %d", new, next);
   }
 }
 

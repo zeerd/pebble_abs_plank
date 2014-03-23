@@ -22,13 +22,20 @@ static void window_load(Window *window) {
   int i;
   static char log[PERSIST_LOG_MAX][PERSIST_LOG_LEN]={""};
   for(i=0;i<PERSIST_LOG_MAX;i++){
-    persist_read_string(NUM_PERSIST_LOG+i, log[i], PERSIST_LOG_LEN);
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "Loading %s from %d", log[i], i);
+    log_t logn;
+    persist_read_data(NUM_PERSIST_LOG+i, &logn, sizeof(logn));
+    if(logn.sets != 0 ){
+      snprintf(log[i], PERSIST_LOG_LEN, 
+               "[%02d%02d %02d%02d]%2dx3x%3d(%2d)",
+               logn.mon, logn.day, logn.hour, logn.min,
+               logn.sets, logn.time, logn.rest);
+      APP_LOG(APP_LOG_LEVEL_DEBUG, "Loading %s from %d", log[i], i);
 
-    text_layer[i] = text_layer_create((GRect) { .origin = { 0, i*20 }, .size = { bounds.size.w, 20 } });
-    text_layer_set_text(text_layer[i], log[i]);
-    text_layer_set_text_alignment(text_layer[i], GTextAlignmentLeft);
-    layer_add_child(window_layer, text_layer_get_layer(text_layer[i]));
+      text_layer[i] = text_layer_create((GRect) { .origin = { 0, i*20 }, .size = { bounds.size.w, 20 } });
+      text_layer_set_text(text_layer[i], log[i]);
+      text_layer_set_text_alignment(text_layer[i], GTextAlignmentLeft);
+      layer_add_child(window_layer, text_layer_get_layer(text_layer[i]));
+    }
   }
 
 }

@@ -12,8 +12,19 @@ enum{
 };
 
 #define PERSIST_LOG_MAX 8
-#define PERSIST_LOG_LEN 100
+#define PERSIST_LOG_LEN 30
 
+typedef struct _log_t{
+  int year;
+  int mon;
+  int day;
+  int hour;
+  int min;
+  int sec;
+  int sets;
+  int time;
+  int rest;
+}log_t;
 
 extern int cfg_sets;
 extern int cfg_time;
