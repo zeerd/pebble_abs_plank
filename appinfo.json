@@ -43,6 +43,11 @@
         "type": "png",
         "name": "IMAGE_PLAY",
         "file": "images/play.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_STOP",
+        "file": "images/stop.png"
       }
     ]
   }

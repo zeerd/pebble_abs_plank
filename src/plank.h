@@ -35,4 +35,8 @@ void open_go_window_layer(void);
 void open_log_window_layer(void);
 void open_about_window_layer(void);
 
+void close_go_window_layer(void);
+void close_log_window_layer(void);
+void close_about_window_layer(void);
+
 #endif /* __PLANK_H__ */

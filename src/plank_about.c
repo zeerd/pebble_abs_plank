@@ -46,6 +46,8 @@ static void window_unload(Window *window) {
 
 void open_about_window_layer(void)
 {
+  close_about_window_layer();
+
   window = window_create();
   window_set_click_config_provider(window, click_config_provider);
   window_set_window_handlers(window, (WindowHandlers) {
@@ -53,4 +55,11 @@ void open_about_window_layer(void)
     .unload = window_unload,
   });
   window_stack_push(window, true);
+}
+
+void close_about_window_layer(void)
+{
+  if (window != NULL){
+    window_destroy(window);
+  }
 }

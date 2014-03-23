@@ -16,45 +16,53 @@ static int go_set_crt = 0;
 static int step_timer = 0;
 
 static bool pause = false;
+static bool done = false;
 
-static Window *window;
+static Window *window = NULL;
 
-static TextLayer *text_layer;
-static TextLayer *text_layer_timer;
+static TextLayer *text_layer = NULL;
+static TextLayer *text_layer_timer = NULL;
 
-static BitmapLayer *image_layer;
-static GBitmap *image;
+static BitmapLayer *image_layer = NULL;
+static GBitmap *image = NULL;
 
-static GBitmap *img_bar_sel;
+static GBitmap *img_bar_sel = NULL;
 
-static AppTimer *timer;
-static ActionBarLayer *action_bar;
+static AppTimer *timer = NULL;
+static ActionBarLayer *action_bar = NULL;
 
 static void window_load(Window *window);
 static void window_unload(Window *window);
 
 static void draw_action_bar(void)
 {
-  if(pause){
+  if(img_bar_sel != NULL){
+    gbitmap_destroy(img_bar_sel);
+  }
+
+  if(done){
+    img_bar_sel = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_STOP);
+    action_bar_layer_set_icon(action_bar, BUTTON_ID_SELECT, img_bar_sel);
+  }
+  else if(pause){
     text_layer_set_text(text_layer_timer, "Paused...");
-    if(img_bar_sel != NULL){
-      gbitmap_destroy(img_bar_sel);
-    }
     img_bar_sel = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_PLAY);
     action_bar_layer_set_icon(action_bar, BUTTON_ID_SELECT, img_bar_sel);
   }
   else{
-    if(img_bar_sel != NULL){
-      gbitmap_destroy(img_bar_sel);
-    }
     img_bar_sel = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_PAUSE);
     action_bar_layer_set_icon(action_bar, BUTTON_ID_SELECT, img_bar_sel);
   }
 }
 
 static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
-  pause = !pause;
-  draw_action_bar();
+  if(!done){
+    pause = !pause;
+    draw_action_bar();
+  }
+  else{
+    window_stack_pop(true);
+  }
 }
 
 //static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
@@ -174,6 +182,9 @@ static void timer_callback(void *context) {
     persist_write_data(NUM_PERSIST_LOG+next, &log, sizeof(log)); 
     persist_write_int(NUM_PERSIST_LOG_CRT, next); 
     //APP_LOG(APP_LOG_LEVEL_DEBUG, "saving %s into %d", new, next);
+
+    done = true;
+    draw_action_bar();
   }
 }
 
@@ -214,6 +225,7 @@ static void window_load(Window *window) {
   go_set_step = SET_STEP_READY;
   step_timer = 5;
   go_set_crt = 0;
+  done = false;
 
   timer = app_timer_register(1000, timer_callback, NULL);
 }
@@ -233,11 +245,23 @@ static void window_unload(Window *window) {
 
 void open_go_window_layer(void)
 {
-  window = window_create();
+  if(window == NULL){
+    window = window_create();
 
-  window_set_window_handlers(window, (WindowHandlers) {
-    .load = window_load,
-    .unload = window_unload,
-  });
+    window_set_window_handlers(window, (WindowHandlers) {
+      .load = window_load,
+      .unload = window_unload,
+    });
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Done initializing, creating window: %p", window);
+  }
   window_stack_push(window, true);
 }
+
+void close_go_window_layer(void)
+{
+  if (window != NULL){
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Done deinitializing, destroy window: %p", window);
+    window_destroy(window);
+  }
+}
+

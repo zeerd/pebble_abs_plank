@@ -281,17 +281,20 @@ static void init(void) {
 
   const bool animated = true;
   window_stack_push(window, animated);
+
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "Done initializing, pushed window: %p", window);
 }
 
 static void deinit(void) {
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "Done deinitializing, destroy window: %p", window);
   window_destroy(window);
+  close_go_window_layer();
+  close_log_window_layer();
+  close_about_window_layer();
 }
 
 int main(void) {
   init();
-
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "Done initializing, pushed window: %p", window);
-
   app_event_loop();
   deinit();
 }
