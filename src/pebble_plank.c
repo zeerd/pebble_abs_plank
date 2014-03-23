@@ -117,7 +117,7 @@ static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuI
     case 2:
       switch (cell_index->row) {
         case 0:
-          total = (cfg_rest+cfg_time)*cfg_sets;
+          total = (cfg_rest+cfg_time)*cfg_sets*3;
           snprintf(num, 30, "%2dm%2ds", total/60, total%60);
           menu_cell_basic_draw(ctx, cell_layer, "Estimated time", num, NULL);
           break;

@@ -163,7 +163,7 @@ static void timer_callback(void *context) {
     time_t t = time(NULL);
     struct tm *loc =  localtime(&t);
     snprintf(new, PERSIST_LOG_LEN, 
-             "[%02d%02d %02d%02d]%2dx%3d(%2d)",
+             "[%02d%02d %02d%02d]%2dx3x%3d(%2d)",
              loc->tm_mon+1, loc->tm_mday, loc->tm_hour, loc->tm_min,
              cfg_sets, cfg_time, cfg_rest);
     persist_write_string(NUM_PERSIST_LOG+next, new); 
