@@ -108,7 +108,15 @@ static void timer_callback(void *context) {
         break;
     }
 
-    vibes_long_pulse();
+    // saving batt
+    if(cfg_tic){
+      // if tic on , using long pulse to make diff from tic
+      vibes_long_pulse();
+    }
+    else{
+      // or , use short pulse for batt saving
+      vibes_short_pulse();
+    }
 
     if(image != NULL){
       gbitmap_destroy(image);
