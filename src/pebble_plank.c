@@ -4,8 +4,8 @@
 
 #define NUM_MENU_SECTIONS 3
 #define NUM_CTRL_MENU_ITEMS 1
-#define NUM_CFG_MENU_ITEMS 4
-#define NUM_OTHER_MENU_ITEMS 3
+#define NUM_CFG_MENU_ITEMS 3
+#define NUM_OTHER_MENU_ITEMS 4
 
 #define NUM_MAX_SETS 10
 #define NUM_MAX_DO_TIME 180
@@ -13,6 +13,7 @@
 
 
 static Window *window;
+static NumberWindow *num_window;
 
 int cfg_sets = 1;
 int cfg_time = 30;
@@ -102,15 +103,6 @@ static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuI
           snprintf(num, 20, "%ds", cfg_rest);
           menu_cell_basic_draw(ctx, cell_layer, "Pause Time(sec.)", num, NULL);
           break;
-
-        case 3:
-          if(cfg_tic){
-            menu_cell_basic_draw(ctx, cell_layer, "With tic", "ON", NULL);
-          }
-          else{
-            menu_cell_basic_draw(ctx, cell_layer, "With tic", "OFF", NULL);
-          }
-          break;
       }
       break;
 
@@ -122,10 +114,18 @@ static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuI
           menu_cell_basic_draw(ctx, cell_layer, "Estimated time", num, NULL);
           break;
         case 1:
+          if(cfg_tic){
+            menu_cell_basic_draw(ctx, cell_layer, "With tic", "ON", NULL);
+          }
+          else{
+            menu_cell_basic_draw(ctx, cell_layer, "With tic", "OFF", NULL);
+          }
+          break;
+        case 2:
           // There is title draw for something more simple than a basic menu item
           menu_cell_title_draw(ctx, cell_layer, "Log");
           break;
-        case 2:
+        case 3:
           // There is title draw for something more simple than a basic menu item
           menu_cell_title_draw(ctx, cell_layer, "About");
           break;
@@ -134,8 +134,27 @@ static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuI
   }
 }
 
+void num_window_sel(struct NumberWindow *number_window, void *context)
+{
+  if(context == 0){
+    cfg_sets = number_window_get_value(number_window);
+  }
+  else if((int)context == 1){
+    cfg_time = number_window_get_value(number_window);
+  }
+  else if((int)context == 2){
+    cfg_rest = number_window_get_value(number_window);
+  }
+  layer_mark_dirty(menu_layer_get_layer(menu_layer));
+  window_stack_pop((Window*)num_window);
+}
+
 // Here we capture when a user selects a menu item
 void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *data) {
+  NumberWindowCallbacks nwcb;
+  nwcb.selected = num_window_sel;
+  nwcb.decremented = NULL;
+  nwcb.incremented = NULL;
 
   APP_LOG(APP_LOG_LEVEL_DEBUG, "menu_select_callback : sel=%d, row=%d", cell_index->section, cell_index->section);
   // Use the row to specify which item will receive the select action
@@ -155,40 +174,59 @@ void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *da
     break;
 
     case 1:
+      if(num_window != NULL){
+        number_window_destroy(num_window);
+      }
       switch (cell_index->row) {
         case 0:
-          cfg_sets %= NUM_MAX_SETS;
-          cfg_sets += 1;
+          //cfg_sets %= NUM_MAX_SETS;
+          //cfg_sets += 1;
+          num_window = number_window_create("Set(s)", nwcb, 0);
+          number_window_set_min(num_window, 1);
+          number_window_set_max(num_window, NUM_MAX_SETS);
+          number_window_set_step_size(num_window, 1);
+          number_window_set_value(num_window, cfg_sets);
           break;
         case 1:
-          cfg_time %= NUM_MAX_DO_TIME;
-          cfg_time += 5;
+          //cfg_time %= NUM_MAX_DO_TIME;
+          //cfg_time += 5;
+          num_window = number_window_create("Time(sec.)", nwcb, (void*)1);
+          number_window_set_min(num_window, 5);
+          number_window_set_max(num_window, NUM_MAX_DO_TIME);
+          number_window_set_step_size(num_window, 5);
+          number_window_set_value(num_window, cfg_time);
           break;
         case 2:
-          cfg_rest %= NUM_MAX_REST_TIME;
-          cfg_rest += 5;
-          break;
-        case 3:
-          cfg_tic = !cfg_tic;
+          //cfg_rest %= NUM_MAX_REST_TIME;
+          //cfg_rest += 5;
+          num_window = number_window_create("Pause Time(sec.)", nwcb, (void*)2);
+          number_window_set_min(num_window, 5);
+          number_window_set_max(num_window, NUM_MAX_REST_TIME);
+          number_window_set_step_size(num_window, 5);
+          number_window_set_value(num_window, cfg_rest);
           break;
       }
+      window_stack_push((Window*)num_window, true);
       // After changing , mark the layer to have it updated
-      layer_mark_dirty(menu_layer_get_layer(menu_layer));
     break;
 
     case 2:
       switch (cell_index->row) {
         case 1:
+          cfg_tic = !cfg_tic;
+          break;
+        case 2:
           // LOG
           open_log_window_layer();
           break;
-        case 2:
+        case 3:
           // ABOUT
           open_about_window_layer();
           break;
       }
     break;
   }
+  layer_mark_dirty(menu_layer_get_layer(menu_layer));
 
 }
 
@@ -287,6 +325,9 @@ static void init(void) {
 
 static void deinit(void) {
   APP_LOG(APP_LOG_LEVEL_DEBUG, "Done deinitializing, destroy window: %p", window);
+  if(num_window != NULL){
+    number_window_destroy(num_window);
+  }
   window_destroy(window);
   close_go_window_layer();
   close_log_window_layer();
