@@ -93,9 +93,23 @@ static void timer_callback(void *context) {
 
     switch(go_set_step){
       case SET_STEP_REGULAR:
+        step_timer = cfg_time[0];
+        break;
       case SET_STEP_SIDE_LEFT:
+        if(cfg_adv){
+          step_timer = cfg_time[1];
+        }
+        else{
+          step_timer = cfg_time[0];
+        }
+        break;
       case SET_STEP_SIDE_RIGHT:
-        step_timer = cfg_time;
+        if(cfg_adv){
+          step_timer = cfg_time[2];
+        }
+        else{
+          step_timer = cfg_time[0];
+        }
         break;
       case SET_STEP_REST_NEXT_SET:
         go_set_crt++;
@@ -132,11 +146,11 @@ static void timer_callback(void *context) {
         image = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_REGULAR);
         break;
       case SET_STEP_REST_NEXT_SET:
-        text_layer_set_text(text_layer, "Rest & Prepare ...");
+        text_layer_set_text(text_layer, "Rest for regular");
         image = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_REGULAR);
         break;
       case SET_STEP_REST_LEFT:
-        text_layer_set_text(text_layer, "Rest & Prepare ...");
+        text_layer_set_text(text_layer, "Rest for left");
         image = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_SIDE_LEFT);
         break;
       case SET_STEP_SIDE_LEFT:
@@ -144,7 +158,7 @@ static void timer_callback(void *context) {
         image = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_SIDE_LEFT);
         break;
       case SET_STEP_REST_RIGHT:
-        text_layer_set_text(text_layer, "Rest & Prepare ...");
+        text_layer_set_text(text_layer, "Rest for right");
         image = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_SIDE_RIGHT);
         break;
       case SET_STEP_SIDE_RIGHT:
@@ -178,6 +192,7 @@ static void timer_callback(void *context) {
     time_t t = time(NULL);
     struct tm *loc =  localtime(&t);
     log_t log;
+    log.ver = 1;
     log.year = loc->tm_year;
     log.mon = loc->tm_mon+1;
     log.day = loc->tm_mday;
@@ -185,7 +200,9 @@ static void timer_callback(void *context) {
     log.min = loc->tm_min;
     log.sec = loc->tm_sec;
     log.sets = cfg_sets;
-    log.time = cfg_time;
+    log.time[0] = cfg_time[0];
+    log.time[1] = cfg_time[1];
+    log.time[2] = cfg_time[2];
     log.rest = cfg_rest;
     persist_write_data(NUM_PERSIST_LOG+next, &log, sizeof(log)); 
     persist_write_int(NUM_PERSIST_LOG_CRT, next); 

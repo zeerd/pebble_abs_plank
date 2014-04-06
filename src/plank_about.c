@@ -23,7 +23,7 @@ static void window_load(Window *window) {
 
   text_layer = text_layer_create((GRect) { .origin = { 0, 0 }, .size = { bounds.size.w, bounds.size.h } });
   text_layer_set_overflow_mode(text_layer, GTextOverflowModeWordWrap);
-  text_layer_set_text(text_layer, "This app helps you to make plank exercices to build your abs. Long press for decrease in config.");
+  text_layer_set_text(text_layer, "This app helps you to make plank exercices to build your abs. Advanced set for the times of each part.");
   text_layer_set_text_alignment(text_layer, GTextAlignmentLeft);
   layer_add_child(window_layer, text_layer_get_layer(text_layer));
 

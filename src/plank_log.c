@@ -25,10 +25,18 @@ static void window_load(Window *window) {
     log_t logn;
     persist_read_data(NUM_PERSIST_LOG+i, &logn, sizeof(logn));
     if(logn.sets != 0 ){
-      snprintf(log[i], PERSIST_LOG_LEN, 
+      if(cfg_adv){
+        snprintf(log[i], PERSIST_LOG_LEN, 
+               "%02d%02d|%2dx(%3d+%3d+%3d+%2d)",
+               logn.mon, logn.day, //logn.hour, logn.min,
+               logn.sets, logn.time[0], logn.time[1], logn.time[2], logn.rest);
+      }
+      else{
+        snprintf(log[i], PERSIST_LOG_LEN, 
                "[%02d%02d %02d%02d]%2dx3x%3d(%2d)",
                logn.mon, logn.day, logn.hour, logn.min,
-               logn.sets, logn.time, logn.rest);
+               logn.sets, logn.time[0], logn.rest);
+      }
       APP_LOG(APP_LOG_LEVEL_DEBUG, "Loading %s from %d", log[i], i);
 
       text_layer[i] = text_layer_create((GRect) { .origin = { 0, i*20 }, .size = { bounds.size.w, 20 } });
